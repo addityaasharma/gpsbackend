@@ -30,9 +30,9 @@ app.use('/user', userRoute);
 app.use('/data', authMiddleware, punchinRoute);
 
 // for admin works
-app.use('/fetchdata',userDetailRouter);
+app.use('/fetchdata',adminMiddleware,userDetailRouter);
 app.use('/admin', adminRoute) //for login/logout
-app.use('/form', userFormRoutes) 
+app.use('/form',adminMiddleware, userFormRoutes) 
 
 app.use((err, req, res, next) => {
     console.error("Unhandled Error:", err);
