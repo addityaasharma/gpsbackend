@@ -1,12 +1,26 @@
 import express from 'express';
+import multer from 'multer';
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { User } from '../../models/userAuthSchema.js';
 import { PunchInData } from '../../models/punchDataSchema.js';
 import { PanelData } from '../../models/panelDataSchema.js';
+import cloudinary from '../../controllers/cloudinary.js'
 
 const router = express.Router();
 
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params : {
+        folder : "images",
+        allowed_formats : ["jpeg", "jpg",],
+        transformation : [{width: 500, height: 500, crop: "limit" }],
+    },
+})
+
+const upload = multer({storage})
+
 // Punch In Route
-router.post('/', async (req, res) => {
+router.post('/',upload.single("image") ,async (req, res) => {
     try {
         const user = await User.findById(req.user.userID); // assuming JWT middleware
         const panelDataID = user.PanelData;
@@ -16,6 +30,7 @@ router.post('/', async (req, res) => {
         }
 
         const { userID, userName, email, timeStamp, location, qrLocation, locationName } = req.body;
+        const image = req.file?.path;
 
         if(!userName){
             return res.json({message : 'No username found'})
@@ -23,6 +38,7 @@ router.post('/', async (req, res) => {
 
         const punchedInData = await PunchInData.create({
             userID,
+            image,
             userName,
             email,
             timeStamp,
